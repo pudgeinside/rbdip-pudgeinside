@@ -1,7 +1,6 @@
 package com.rbdip.bookstore.order;
 
 import java.util.List;
-import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,26 +24,20 @@ public class OrderController {
 
     @PostMapping("/orders")
     @ResponseStatus(HttpStatus.CREATED)
-    public Map<String, Object> createOrder(@RequestBody CreateOrderRequest request) {
+    public OrderCreatedResponse createOrder(@RequestBody CreateOrderRequest request) {
         Order order = orderService.createOrder(request);
-        return Map.of("id", order.getId(), "status", order.getStatus());
+        return new OrderCreatedResponse(order.getId(), order.getStatus());
     }
 
     @GetMapping("/orders")
-    public List<Map<String, Object>> listOrders() {
+    public List<OrderSummaryResponse> listOrders() {
         List<Order> orders = orderRepository.findAll();
         return orders.stream()
                 .map(order -> {
                     // N+1: отдельный запрос на позиции для каждого заказа вместо
                     // одного JOIN FETCH / batch-запроса. Цель для ЛР4.
                     List<OrderItem> items = orderItemRepository.findByOrderId(order.getId());
-                    return Map.<String, Object>of(
-                            "id", order.getId(),
-                            "customerFullName", order.getCustomerFullName(),
-                            "status", order.getStatus(),
-                            "items", items.stream()
-                                    .map(i -> Map.of("productName", i.getProductName(), "quantity", i.getQuantity()))
-                                    .toList());
+                    return OrderSummaryResponse.from(order, items);
                 })
                 .toList();
     }

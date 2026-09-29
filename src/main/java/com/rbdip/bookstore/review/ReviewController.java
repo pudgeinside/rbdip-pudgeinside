@@ -1,7 +1,6 @@
 package com.rbdip.bookstore.review;
 
 import java.util.List;
-import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,21 +20,16 @@ public class ReviewController {
 
     @PostMapping("/products/{productId}/reviews")
     @ResponseStatus(HttpStatus.CREATED)
-    public Map<String, Object> addReview(@PathVariable Long productId, @RequestBody Map<String, Object> body) {
-        String authorName = (String) body.get("authorName");
-        Integer rating = (Integer) body.get("rating");
-        String comment = (String) body.get("comment");
-        Review review = reviewService.addReview(productId, authorName, rating, comment);
-        return Map.of("id", review.getId());
+    public ReviewCreatedResponse addReview(
+            @PathVariable Long productId, @RequestBody CreateReviewRequest request) {
+        Review review = reviewService.addReview(productId, request.authorName(), request.rating(), request.comment());
+        return ReviewCreatedResponse.from(review);
     }
 
     @GetMapping("/products/{productId}/reviews")
-    public List<Map<String, Object>> listReviews(@PathVariable Long productId) {
+    public List<ReviewSummaryResponse> listReviews(@PathVariable Long productId) {
         return reviewService.listReviews(productId).stream()
-                .map(r -> Map.<String, Object>of(
-                        "authorName", r.getAuthorName(),
-                        "rating", r.getRating(),
-                        "comment", r.getComment() == null ? "" : r.getComment()))
+                .map(ReviewSummaryResponse::from)
                 .toList();
     }
 }

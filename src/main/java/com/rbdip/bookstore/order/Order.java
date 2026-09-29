@@ -18,6 +18,8 @@ import java.time.Instant;
 @Table(name = "orders")
 public class Order {
 
+    private static final String NEW_STATUS = "new";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -41,11 +43,15 @@ public class Order {
         // for JPA
     }
 
-    public Order(String customerFullName, String customerAddress, String customerPhone, String status) {
+    private Order(String customerFullName, String customerAddress, String customerPhone, String status) {
         this.customerFullName = customerFullName;
         this.customerAddress = customerAddress;
         this.customerPhone = customerPhone;
         this.status = status;
+    }
+
+    public static Order newOrder(String customerFullName, String customerAddress, String customerPhone) {
+        return new Order(customerFullName, customerAddress, customerPhone, NEW_STATUS);
     }
 
     public Long getId() {
