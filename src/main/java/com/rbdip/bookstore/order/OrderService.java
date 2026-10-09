@@ -2,6 +2,7 @@ package com.rbdip.bookstore.order;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,18 +20,21 @@ public class OrderService {
     private final PricingCalculator pricingCalculator;
     private final OrderWriter orderWriter;
     private final OrderConfirmationNotifier notifier;
+    private final CustomerRepository customerRepository;
 
     public OrderService(
             OrderRequestValidator validator,
             OrderItemResolver itemResolver,
             PricingCalculator pricingCalculator,
             OrderWriter orderWriter,
-            OrderConfirmationNotifier notifier) {
+            OrderConfirmationNotifier notifier,
+            CustomerRepository customerRepository) {
         this.validator = validator;
         this.itemResolver = itemResolver;
         this.pricingCalculator = pricingCalculator;
         this.orderWriter = orderWriter;
         this.notifier = notifier;
+        this.customerRepository = customerRepository;
     }
 
     @Transactional
@@ -43,13 +47,22 @@ public class OrderService {
                 customerTypeOrDefault(request.customerType()),
                 request.couponCode());
 
-        Order order = orderWriter.write(
-                Order.newOrder(request.customerFullName(), request.customerAddress(), request.customerPhone()),
-                lines);
+        Customer customer = resolveCustomer(
+                request.customerFullName(), request.customerAddress(), request.customerPhone());
+
+        Order order = orderWriter.write(Order.newOrder(customer), lines);
 
         notifier.sendConfirmation(request.customerFullName(), order.getId(), total);
 
         return order;
+    }
+
+    private Customer resolveCustomer(String fullName, String address, String phone) {
+        return customerRepository.findByFullName(fullName).stream()
+                .filter(candidate -> Objects.equals(candidate.getAddress(), address)
+                        && Objects.equals(candidate.getPhone(), phone))
+                .findFirst()
+                .orElseGet(() -> customerRepository.save(Customer.of(fullName, address, phone)));
     }
 
     private String customerTypeOrDefault(String customerType) {
