@@ -58,11 +58,13 @@ public class OrderService {
     }
 
     private Customer resolveCustomer(String fullName, String address, String phone) {
-        return customerRepository.findByFullName(fullName).stream()
+        CustomerName name = CustomerName.parse(fullName);
+        return customerRepository.findByFirstNameAndLastName(name.firstName(), name.lastName()).stream()
                 .filter(candidate -> Objects.equals(candidate.getAddress(), address)
                         && Objects.equals(candidate.getPhone(), phone))
                 .findFirst()
-                .orElseGet(() -> customerRepository.save(Customer.of(fullName, address, phone)));
+                .orElseGet(() -> customerRepository.save(
+                        Customer.of(name.firstName(), name.lastName(), address, phone)));
     }
 
     private String customerTypeOrDefault(String customerType) {

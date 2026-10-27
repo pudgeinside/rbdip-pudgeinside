@@ -17,9 +17,9 @@ WHERE c.full_name = o.customer_full_name
   AND COALESCE(c.address, '') = COALESCE(o.customer_address, '')
   AND COALESCE(c.phone, '') = COALESCE(o.customer_phone, '');
 
-ALTER TABLE orders ALTER COLUMN customer_id SET NOT NULL;
 ALTER TABLE orders ADD CONSTRAINT fk_orders_customer
-    FOREIGN KEY (customer_id) REFERENCES customers(id);
+    FOREIGN KEY (customer_id) REFERENCES customers(id) NOT VALID;
+ALTER TABLE orders VALIDATE CONSTRAINT fk_orders_customer;
 
 ALTER TABLE order_items ADD COLUMN product_id BIGINT;
 
@@ -28,9 +28,6 @@ SET product_id = p.id
 FROM products p
 WHERE p.name = oi.product_name;
 
-ALTER TABLE order_items ALTER COLUMN product_id SET NOT NULL;
 ALTER TABLE order_items ADD CONSTRAINT fk_order_items_product
-    FOREIGN KEY (product_id) REFERENCES products(id);
-
-ALTER TABLE orders DROP COLUMN customer_full_name, DROP COLUMN customer_address, DROP COLUMN customer_phone;
-ALTER TABLE order_items DROP COLUMN product_name, DROP COLUMN product_price;
+    FOREIGN KEY (product_id) REFERENCES products(id) NOT VALID;
+ALTER TABLE order_items VALIDATE CONSTRAINT fk_order_items_product;

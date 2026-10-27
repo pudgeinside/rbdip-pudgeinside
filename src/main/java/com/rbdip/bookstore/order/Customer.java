@@ -16,8 +16,11 @@ public class Customer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "full_name", nullable = false)
-    private String fullName;
+    @Column(name = "first_name", nullable = false)
+    private String firstName;
+
+    @Column(name = "last_name", nullable = false)
+    private String lastName;
 
     @Column(name = "address")
     private String address;
@@ -29,22 +32,31 @@ public class Customer {
         // for JPA
     }
 
-    private Customer(String fullName, String address, String phone) {
-        this.fullName = fullName;
+    private Customer(String firstName, String lastName, String address, String phone) {
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.address = address;
         this.phone = phone;
     }
 
-    public static Customer of(String fullName, String address, String phone) {
-        return new Customer(fullName, address, phone);
+    public static Customer of(String firstName, String lastName, String address, String phone) {
+        return new Customer(firstName, lastName, address, phone);
     }
 
     public Long getId() {
         return id;
     }
 
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
     public String getFullName() {
-        return fullName;
+        return CustomerName.of(firstName, lastName).fullName();
     }
 
     public String getAddress() {
