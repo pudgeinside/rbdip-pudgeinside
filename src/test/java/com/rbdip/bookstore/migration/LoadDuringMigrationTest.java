@@ -19,11 +19,7 @@ import org.flywaydb.core.api.MigrationInfo;
 import org.junit.jupiter.api.Test;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
-
-@Testcontainers
 class LoadDuringMigrationTest {
 
     private static final int THREADS_PER_ROLE = 4;
@@ -31,11 +27,14 @@ class LoadDuringMigrationTest {
     private static final int TIMEOUT_SECONDS = 10;
     private static final long WRITES_DEADLINE_SECONDS = 5;
 
-    @Container
     static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16-alpine")
             .withDatabaseName("bookstore_load")
             .withUsername("bookstore")
             .withPassword("bookstore");
+
+    static {
+        POSTGRES.start();
+    }
 
     @Test
     void expandStepsKeepLegacyReadersAndWritersWorking() throws Exception {
