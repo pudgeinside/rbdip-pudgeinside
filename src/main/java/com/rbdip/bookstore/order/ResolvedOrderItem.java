@@ -9,7 +9,7 @@ public record ResolvedOrderItem(Product product, int quantity) {
         return new PricingCalculator.LineItem(product.getPrice(), quantity);
     }
 
-    public OrderItem toOrderItem(Long orderId) {
-        return new OrderItem(orderId, product, quantity);
+    public OrderItem toOrderItem(Order order) {
+        return new OrderItem(order, product, quantity);
     }
 }

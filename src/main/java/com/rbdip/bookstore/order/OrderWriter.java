@@ -18,7 +18,7 @@ public class OrderWriter {
     public Order write(Order order, List<ResolvedOrderItem> lines) {
         Order saved = orderRepository.save(order);
         for (ResolvedOrderItem line : lines) {
-            orderItemRepository.save(line.toOrderItem(saved.getId()));
+            orderItemRepository.save(line.toOrderItem(saved));
         }
         return saved;
     }
